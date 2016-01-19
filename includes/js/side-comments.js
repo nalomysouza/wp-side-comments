@@ -441,6 +441,7 @@ SideComments.prototype.hideComments = function() {
 
   this.$el.removeClass('side-comments-open');
   this.$el.find('.commentable-section').removeClass('active');
+
 };
 
 /**
@@ -602,7 +603,7 @@ function Section( eventPipe, $el, currentUser, comments ) {
 	this.id = $el.data('section-id');
 
 	this.$el.on(this.clickEventName, '.side-comment .marker', _.bind(this.markerClick, this));
-    this.$el.on(this.clickEventName, _.bind(this.markerClick, this));
+    // this.$el.on(this.clickEventName, _.bind(this.markerClick, this));
 	this.$el.on(this.clickEventName, '.side-comment .add-comment', _.bind(this.addCommentClick, this));
 	this.$el.on(this.clickEventName, '.side-comment .add-reply', _.bind(this.addReplyClick, this));
 	this.$el.on(this.clickEventName, '.side-comment .post', _.bind(this.postCommentClick, this));
@@ -617,13 +618,21 @@ function Section( eventPipe, $el, currentUser, comments ) {
  * @param  {Object} event The event object.
  */
 Section.prototype.markerClick = function( event ) {
-	event.preventDefault();
 
+   if( jQuery(event.target).hasClass('acess-link') ) {
+      return;
+    }
+
+	  event.preventDefault();
     var com_sec = jQuery(event.target).parents('.commentable-section:first');
 
-    if (com_sec.find('.active').length == 0 && !jQuery(event.target).hasClass('fa-times')) {
+    if (com_sec.find('.active').length == 0 && !jQuery(event.target).hasClass('fa-times') && !jQuery(event.target).hasClass('cancel') ) {
 	    this.select();
+
     }
+
+
+
 };
 
 /**

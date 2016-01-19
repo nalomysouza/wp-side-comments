@@ -1,7 +1,7 @@
 <?php 
 
 	/*
-	Plugin Name: WP Side Comments
+	Plugin Name: WP Side Comments CDBR
 	Plugin URI: http://ctlt.ubc.ca/
 	Description: Based on aroc's Side Comments .js to enable inline commenting
 	Author: CTLT Dev, Richard Tape
@@ -14,7 +14,10 @@
 	}
 
 	define( 'CTLT_WP_SIDE_COMMENTS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-
+	define( 'CTLT_WP_SIDE_COMMENTS_PLUGIN_PATH', plugin_dir_path(__FILE__) );
+	
+	//includes wp side comments admin class
+	require_once CTLT_WP_SIDE_COMMENTS_PLUGIN_PATH . 'classes/class-wp-side-comments-admin.php';
 
 	class CTLT_WP_Side_Comments
 	{
@@ -76,24 +79,32 @@
 				return;
 			}
 
-			// The theme to load - must be a string of the url to load
-			$theme = apply_filters( 'wp_side_comments_css_theme', CTLT_WP_SIDE_COMMENTS_PLUGIN_URL . 'includes/css/themes/default-theme.css' );
+			$theme = false;
+
+			// The theme to load - must be a string of the url to load 
+			global $WPSideCommentsAdmin;
+			
+			if( strlen($WPSideCommentsAdmin->getDefaultThemeCss()) <= 2 )
+				$theme = apply_filters( 'wp_side_comments_css_theme', CTLT_WP_SIDE_COMMENTS_PLUGIN_URL . 'includes/css/themes/default-theme.css');
 
 			wp_register_style( 'side-comments-style', CTLT_WP_SIDE_COMMENTS_PLUGIN_URL . 'includes/css/side-comments.css' );
 			wp_register_script( 'side-comments-script', CTLT_WP_SIDE_COMMENTS_PLUGIN_URL . 'includes/js/side-comments.js', array ( 'jquery' ) );
 			wp_register_script( 'wp-side-comments-script', CTLT_WP_SIDE_COMMENTS_PLUGIN_URL . 'includes/js/wp-side-comments.js', array ( 'jquery', 'side-comments-script' ), null, true );
-
+						
 			wp_enqueue_style( 'side-comments-style' );
 			wp_enqueue_script( 'side-comments-script' );
 			wp_enqueue_script( 'wp-side-comments-script' );
 
 			if( $theme && !empty( $theme ) )
 			{
-
 				wp_register_style( 'side-comments-theme', $theme );
 				wp_enqueue_style( 'side-comments-theme' );
-
 			} 
+
+			$var_side = array();
+		    $var_side['signup_url'] = wp_registration_url();
+		    $var_side['login_url'] = wp_login_url();
+		    wp_localize_script( 'side-comments-script', 'side', $var_side );
 
 			// Need to get some data for our JS, which we pass to it via localization
 			$data = $this->getCommentsData();
@@ -399,7 +410,7 @@
 			// We need name, ID and avatar url
 			$name 			= ( isset( $user->display_name ) ) ? $user->display_name : $user->user_login;
 
-			$avatarURL 		= static::get_avatar_url( $user->user_email );
+			$getAvatarUrl 	= static::get_avatar_url( $user->user_email );
 			$avatarURL 		= ( isset( $getAvatarUrl ) && !empty( $getAvatarUrl ) ) ? $getAvatarUrl : includes_url( 'images/blank.gif' );
 
 			// Build our output
@@ -464,6 +475,15 @@
 			$authorName		= sanitize_text_field( $_REQUEST['authorName'] );
 			$authorID 		= absint( $_REQUEST['authorId'] );
 			$parentID 		= absint( $_REQUEST['parentID'] );
+
+			if( strlen( $commentText ) === 0 ) {
+
+				$result = array( 'type' => 'failure', 'reason' => __( 'Erro! Comment void', 'wp-side-comments' ) );
+
+				$result = json_encode( $result );
+				echo $result;
+				die();	
+			}
 
 			$user = get_user_by( 'id', $authorID );
 
@@ -666,19 +686,42 @@
 		 */
 
 		private function weAreOnAValidScreen()
-		{
-
+		{	
+			
 			// We don't have anything for the admin at the moment and comments are only on a single 
 			if( is_admin() || !is_singular() ){
 				return false;
 			}
 
-			// Ensure comments are open on the post we're on
-			global $post;
+			global $post, $WPSideCommentsAdmin;
 
-			if( ! comments_open( $post->ID ) ){
+			// check is page template comment TODO: remover eh desnecessario depois que adicionei o if abaixo
+			if( get_page_template_slug( $post->ID ) == 'template_side_comment.php') {
+				return true;
+			}
+
+			// check is page template comment selected
+			if( $WPSideCommentsAdmin->getDisplayPageTemplateSelected() == get_page_template_slug( $post->ID ) )
+				return true;
+
+			//Ensure comments are open on the post we're on
+			if( ! comments_open( $post->ID ) && !is_page()){
 				return false;
 			}
+
+			if( $WPSideCommentsAdmin->getDisplayPostTypeSelected() == get_post_type() )
+				return true;
+
+
+			if( !$WPSideCommentsAdmin->isDisplayInPagsAllowed() && is_page() ) {
+				return false;
+			}
+
+			if( !$WPSideCommentsAdmin->isDisplayInPostsAllowed() && is_single() ) {
+				return false;
+			}
+			
+			// echo $WPSideCommentsAdmin->getDisplayPostTypeSelected();
 
 			return true;
 

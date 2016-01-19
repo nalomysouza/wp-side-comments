@@ -51,6 +51,7 @@ jQuery(document).ready(function($) {
 
 	// We need to listen for the post and delete events and post an AJAX response back to PHP
 	sideComments.on( 'commentPosted', function( comment ){
+	
 
 		$.ajax( {
 			url: ajaxURL,
@@ -78,7 +79,12 @@ jQuery(document).ready(function($) {
 					// We'll need this if we want to delete the comment.
 					var newComment = sideComments.insertComment( comment );
 
+					$('body').find('.comment-sucess').show().delay(5000).fadeOut();
 				}else{
+					$('body').find('.message-error').remove();
+					$('body').prepend('<div class="message-error">' + response.reason + '</div>');
+
+					$('.message-error').delay(5000).fadeOut(400);
 
 					// console.log( 'success, response.type not equal to success' );
 					// console.log( response );
@@ -144,13 +150,12 @@ jQuery(document).ready(function($) {
 		// });
 
 	});
-// Adds .active to the parent p.commentable-section of .marker when clicked
+	// Adds .active to the parent p.commentable-section of .marker when clicked
 	$( ".marker", ".side-comment" ).on('click', function() {
-
 	 	if(!$(this).parent().hasClass('active') ) {
  	 		$(this).parent().parent('p.commentable-section').addClass('active');
  	 	} else { 
- 	 		$(this).parent().parent('p.commentable-section').removeClass('active');
+ 	 		//$(this).parent().parent('p.commentable-section').removeClass('active');
  	 	}
  	});
 
@@ -167,7 +172,7 @@ jQuery(document).ready(function($) {
 	//When clicked browser scrolls to top of item
 	$(".marker").click(function() {
 	    $('html, body').animate({
-	        scrollTop: $(this).parent().offset().top
+	        scrollTop: $(this).parent().parent().offset().top - 50
 	    }, 500);
 	});
 	

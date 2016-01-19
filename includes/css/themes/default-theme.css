@@ -65,6 +65,7 @@
 .side-comment.active .comments-wrapper {
   -webkit-animation: fadein 0.2s;
   animation: fadein 0.2s;
+  background: #fff;
 }
 .side-comment.has-comments .comments-wrapper {
   top: -22px;
