@@ -44,6 +44,18 @@ class WP_Side_Comments_Admin
     const SETTINGS_SECTION_CUSTOM_JS_FIELD_ID = 'wp-side-comments-custom-js-field';
     const SETTINGS_SECTION_CUSTOM_JS_FIELD_TITLE = 'Customizar JS:';
 
+     // SECTION
+    const SETTINGS_SECTION_TERMS_SITE_ID = 'wp-side-comments-terms-site';
+    const SETTINGS_SECTION_TERMS_SITE_TITLE = 'Termos de uso do site';
+
+    const SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID = 'wp-side-comments-confirm-terms-field';
+    const SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_FIELD_TITLE = 'O usuário deve concordar com o termo de uso?';
+
+    const SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID = 'wp-side-comments-what-page-terms-field';
+    const SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_TITLE = 'Qual a página de termo de uso?';
+
+    const SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID = 'wp-side-comments-title-msg-terms-field';
+    const SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_TITLE = 'Qual o título da mensagem para concordar com o termo de uso?';
 
     private static $SETTINGS_SECTION_YES_NO_VALID_VALUES = array(
         self::SETTINGS_SECTION_YES_VALUE,
@@ -211,6 +223,38 @@ class WP_Side_Comments_Admin
             self::SETTINGS_PAGE_NAME,
             self::SETTINGS_SECTION_CUSTOM_THEME_ID
         );
+
+        // new section
+        add_settings_section(
+            self::SETTINGS_SECTION_TERMS_SITE_ID,
+            self::SETTINGS_SECTION_TERMS_SITE_TITLE,
+            array($this, 'print_section_terms_site'),
+            self::SETTINGS_PAGE_NAME
+        );
+
+        add_settings_field(
+            self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID,
+            self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_FIELD_TITLE,
+            array($this, 'print_display_confirm_terms_site_field_callback'),
+            self::SETTINGS_PAGE_NAME,
+            self::SETTINGS_SECTION_TERMS_SITE_ID
+        );
+
+        add_settings_field(
+            self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID,
+            self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_TITLE,
+            array($this, 'print_display_what_page_terms_callback'),
+            self::SETTINGS_PAGE_NAME,
+            self::SETTINGS_SECTION_TERMS_SITE_ID
+        );
+
+        add_settings_field(
+            self::SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID,
+            self::SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_TITLE,
+            array($this, 'print_display_title_msg_terms_field_callback'),
+            self::SETTINGS_PAGE_NAME,
+            self::SETTINGS_SECTION_TERMS_SITE_ID
+        );
     }
 
     /**
@@ -247,7 +291,7 @@ class WP_Side_Comments_Admin
 
         if (isset($input[self::SETTINGS_SECTION_DISPLAY_IN_PAGE_TEMPLATE_FIELD_ID])) {
             $value = $input[self::SETTINGS_SECTION_DISPLAY_IN_PAGE_TEMPLATE_FIELD_ID];
-             $validatedInput[self::SETTINGS_SECTION_DISPLAY_IN_PAGE_TEMPLATE_FIELD_ID] = $value;
+            $validatedInput[self::SETTINGS_SECTION_DISPLAY_IN_PAGE_TEMPLATE_FIELD_ID] = $value;
         }
 
         if (isset($input[self::SETTINGS_SECTION_DEFAULT_THEME_CSS_FIELD_ID])) {
@@ -258,6 +302,26 @@ class WP_Side_Comments_Admin
         if (isset($input[self::SETTINGS_SECTION_CUSTOM_JS_FIELD_ID])) {
             $value = $input[self::SETTINGS_SECTION_CUSTOM_JS_FIELD_ID];
             $validatedInput[self::SETTINGS_SECTION_CUSTOM_JS_FIELD_ID] = $value;
+        }
+
+
+        if (isset($input[self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID])) {
+            $value = $input[self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID];
+            if (in_array($value, self::$SETTINGS_SECTION_YES_NO_VALID_VALUES)) {
+                $validatedInput[self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID] = $value;
+            } else {
+                add_settings_error(self::SETTINGS_OPTION_NAME, 'invalid_value', 'Por favor escolha uma opção válida no campo "' . self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_FIELD_TITLE . '".', $type = 'error');
+            }
+        }
+
+        if (isset($input[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID])) {
+            $value = $input[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID];
+            $validatedInput[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID] = $value;
+        }
+
+         if (isset($input[self::SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID])) {
+            $value = $input[self::SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID];
+            $validatedInput[self::SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID] = $value;
         }
 
         return apply_filters('wp_side_comments_input_validate', $validatedInput, $input);
@@ -289,6 +353,16 @@ class WP_Side_Comments_Admin
         print 'Customize o tema do plugin. Se preencher o css o tema padrão será substituído';
     }
 
+    /**
+     * Prints the guests interaction section text
+     */
+    public function print_section_terms_site()
+    {
+        //TODO: recuperar texto de outro lugar
+        print 'Marque e configure se deseja que os usuários confirmem a leitura do termo de uso.';
+    }
+
+    
 
     /**
      * Prints the value of allow guest interaction
@@ -376,39 +450,22 @@ class WP_Side_Comments_Admin
     public function print_display_in_page_template_field_callback()
     {
         //TODO: recuperar HTML de outro local
-        // $args = array(
-        //    'public'   => true,
-        //    '_builtin' => false
-        // );
-
         $templates = get_page_templates();
 
-
-
-        // $output = 'names'; // names or objects, note names is the default
-        // $operator = 'and'; // 'and' or 'or'
-
-        // $post_types = get_post_types( $args, $output, $operator ); 
 
         printf( '<select id="%s" name="%s[%s]">',
             self::SETTINGS_SECTION_DISPLAY_IN_PAGE_TEMPLATE_FIELD_ID,
             self::SETTINGS_OPTION_NAME,
             self::SETTINGS_SECTION_DISPLAY_IN_PAGE_TEMPLATE_FIELD_ID
         );
-            echo '<option value="">Nenhum</option>';
 
-            foreach ( $templates as $template_name => $template_filename ) {
+        echo '<option value="">Nenhum</option>';
 
-                // echo "$template_name ($template_filename)<br />";
-                   printf('<option value="%s" %s>%s (%s)</option>', $template_filename, $this->getDisplayPageTemplateSelected() == $template_filename ? 'selected' : '', $template_name, $template_filename );
-                
-             }
-        //     foreach ( $post_types  as $post_type ) {
-        //      $obj = get_post_type_object( $post_type );
-          
-        //     }
+        foreach ( $templates as $template_name => $template_filename ) {
+            printf('<option value="%s" %s>%s (%s)</option>', $template_filename, $this->getDisplayPageTemplateSelected() == $template_filename ? 'selected' : '', $template_name, $template_filename );
+        
+         }
         echo "</select>";
-
 
     }    
 
@@ -441,6 +498,78 @@ class WP_Side_Comments_Admin
             $this->getCustomJs()
         );
     }
+
+     /**
+     * Prints the question if user has confirm terms 
+     */
+    public function print_display_confirm_terms_site_field_callback()
+    {
+        //TODO: recuperar HTML de outro local
+        printf(
+            '<span class="radio"><input type="radio" id="%s" name="%s[%s]" value="%s" %s>SIM</span>',
+            self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID . '-allow',
+            self::SETTINGS_OPTION_NAME,
+            self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID,
+            self::SETTINGS_SECTION_YES_VALUE,
+            $this->isDisplayConfirmTermsAllowed() ? 'checked' : ''
+        );
+
+        printf(
+            '<span class="radio"><input type="radio" id="%s" name="%s[%s]" value="%s" %s>NÃO</span> ',
+            self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID . '-deny',
+            self::SETTINGS_OPTION_NAME,
+            self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID,
+            self::SETTINGS_SECTION_NO_VALUE,
+            !$this->isDisplayConfirmTermsAllowed() ? 'checked' : ''
+        );
+    }
+
+
+    /**
+     * 
+     */
+    public function print_display_what_page_terms_callback()
+    {
+        // $args = array(
+        //     'sort_order' => 'asc',
+        //     'sort_column' => 'post_title',
+        //     'hierarchical' => 1,
+        //     'post_type' => 'page',
+        //     'post_status' => 'publish'
+        // ); 
+        $pages = get_pages(); 
+
+        printf( '<select id="%s" name="%s[%s]">',
+            self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID,
+            self::SETTINGS_OPTION_NAME,
+            self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID
+        );
+
+        echo '<option value="">Nenhum</option>';
+
+        foreach ( $pages as $page ) {
+            printf('<option value="%s" %s>%s (%s)</option>', $page->ID, $this->getDisplayWhatPageTermsSelected() == $page->ID ? 'selected' : '', $page->post_title, $page->ID );
+        
+         }
+        echo "</select>";
+
+    } 
+
+    /**
+     * Prints input to custom title msg
+     */
+    public function print_display_title_msg_terms_field_callback()
+    {
+        
+        //TODO: recuperar HTML de outro local
+        printf( '<input type="text" id="%s" name="%s[%s]" value="%s"/>',
+            self::SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID,
+            self::SETTINGS_OPTION_NAME,
+            self::SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID,
+            $this->getTitleMsgTerms()
+        );
+    }
+
 
     /**
      * Find the current template for comment's section
@@ -502,7 +631,6 @@ class WP_Side_Comments_Admin
     }
 
 
-
     /**
      * Get css custom
      * @return string
@@ -561,7 +689,39 @@ class WP_Side_Comments_Admin
 EOT;
     }
 
-   
+    /**
+     * 
+     *
+     * @return bool returns TRUE if the user is able, FALSE otherwise
+     */
+    public function isDisplayConfirmTermsAllowed()
+    {
+        return isset($this->options[self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID])
+        && $this->options[self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID] == self::SETTINGS_SECTION_YES_VALUE;
+    }
+
+
+    /**
+     *  
+     * @return string
+     */
+    public function getDisplayWhatPageTermsSelected()
+    {
+        if (isset($this->options[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID])) {
+            return $this->options[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID];
+        } 
+    }
+
+     /**
+     *  
+     * @return string
+     */
+    public function getTitleMsgTerms()
+    {
+        if (isset($this->options[self::SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID])) {
+            return $this->options[self::SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID];
+        } 
+    }
 }
 
 global $WPSideCommentsAdmin;

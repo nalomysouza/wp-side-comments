@@ -129,6 +129,13 @@
 
 			wp_localize_script( 'wp-side-comments-script', 'commentsData', $data );
 
+
+		    if ( is_single() || is_page() ) {
+		        wp_enqueue_script('jquery-ui-dialog');
+		        wp_enqueue_script('termos-de-uso', CTLT_WP_SIDE_COMMENTS_PLUGIN_URL . 'includes/js/terms.js');
+		        wp_localize_script('termos-de-uso', 'vars', array( 'ajaxurl' => admin_url('admin-ajax.php'), 'site_url' => site_url()));
+		    }
+
 		}/* wp_enqueue_scripts__loadScriptsAndStyles() */
 
 
