@@ -35,9 +35,11 @@
                                     });
 
                                 $( this ).dialog( "close" );
+                                $('#cdbr_dialog').remove();
                             },
                             "Não, eu não concordo": function() {
                               $( this ).dialog( "close" );
+                               $('#cdbr_dialog').remove();
                               return false;
                             }
                         }
