@@ -5,7 +5,7 @@
         $('#cdbr_dialog').remove();
 
         var widget_title = 'Termos de uso';
-        var widget_text = 'Para comentar você precisa concordar com os <a href="'+vars.site_url+'/termos-de-uso">termos de uso</a>.';
+        var widget_text = vars.terms_of_use_title;
         
         $.post(
             vars.ajaxurl, 

@@ -49,13 +49,13 @@ class WP_Side_Comments_Admin
     const SETTINGS_SECTION_TERMS_SITE_TITLE = 'Termos de uso do site';
 
     const SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID = 'wp-side-comments-confirm-terms-field';
-    const SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_FIELD_TITLE = 'O usuário deve concordar com o termo de uso?';
+    const SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_FIELD_TITLE = 'O usuário deve concordar com o termos de uso?';
 
-    const SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID = 'wp-side-comments-what-page-terms-field';
-    const SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_TITLE = 'Qual a página de termo de uso?';
+    // const SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID = 'wp-side-comments-what-page-terms-field';
+    // const SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_TITLE = 'Qual a página do termos de uso?';
 
     const SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID = 'wp-side-comments-title-msg-terms-field';
-    const SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_TITLE = 'Qual o título da mensagem para concordar com o termo de uso?';
+    const SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_TITLE = 'Qual o título da mensagem para concordar com o termos de uso?';
 
     private static $SETTINGS_SECTION_YES_NO_VALID_VALUES = array(
         self::SETTINGS_SECTION_YES_VALUE,
@@ -240,13 +240,13 @@ class WP_Side_Comments_Admin
             self::SETTINGS_SECTION_TERMS_SITE_ID
         );
 
-        add_settings_field(
-            self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID,
-            self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_TITLE,
-            array($this, 'print_display_what_page_terms_callback'),
-            self::SETTINGS_PAGE_NAME,
-            self::SETTINGS_SECTION_TERMS_SITE_ID
-        );
+        // add_settings_field(
+        //     self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID,
+        //     self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_TITLE,
+        //     array($this, 'print_display_what_page_terms_callback'),
+        //     self::SETTINGS_PAGE_NAME,
+        //     self::SETTINGS_SECTION_TERMS_SITE_ID
+        // );
 
         add_settings_field(
             self::SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID,
@@ -314,10 +314,10 @@ class WP_Side_Comments_Admin
             }
         }
 
-        if (isset($input[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID])) {
-            $value = $input[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID];
-            $validatedInput[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID] = $value;
-        }
+        // if (isset($input[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID])) {
+        //     $value = $input[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID];
+        //     $validatedInput[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID] = $value;
+        // }
 
          if (isset($input[self::SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID])) {
             $value = $input[self::SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID];
@@ -511,7 +511,7 @@ class WP_Side_Comments_Admin
             self::SETTINGS_OPTION_NAME,
             self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID,
             self::SETTINGS_SECTION_YES_VALUE,
-            $this->isDisplayConfirmTermsAllowed() ? 'checked' : ''
+            $this->isConfirmTermsAllowed() ? 'checked' : ''
         );
 
         printf(
@@ -520,7 +520,7 @@ class WP_Side_Comments_Admin
             self::SETTINGS_OPTION_NAME,
             self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID,
             self::SETTINGS_SECTION_NO_VALUE,
-            !$this->isDisplayConfirmTermsAllowed() ? 'checked' : ''
+            !$this->isConfirmTermsAllowed() ? 'checked' : ''
         );
     }
 
@@ -528,32 +528,32 @@ class WP_Side_Comments_Admin
     /**
      * 
      */
-    public function print_display_what_page_terms_callback()
-    {
-        // $args = array(
-        //     'sort_order' => 'asc',
-        //     'sort_column' => 'post_title',
-        //     'hierarchical' => 1,
-        //     'post_type' => 'page',
-        //     'post_status' => 'publish'
-        // ); 
-        $pages = get_pages(); 
+    // public function print_display_what_page_terms_callback()
+    // {
+    //     // $args = array(
+    //     //     'sort_order' => 'asc',
+    //     //     'sort_column' => 'post_title',
+    //     //     'hierarchical' => 1,
+    //     //     'post_type' => 'page',
+    //     //     'post_status' => 'publish'
+    //     // ); 
+    //     $pages = get_pages(); 
 
-        printf( '<select id="%s" name="%s[%s]">',
-            self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID,
-            self::SETTINGS_OPTION_NAME,
-            self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID
-        );
+    //     printf( '<select id="%s" name="%s[%s]">',
+    //         self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID,
+    //         self::SETTINGS_OPTION_NAME,
+    //         self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID
+    //     );
 
-        echo '<option value="">Nenhum</option>';
+    //     echo '<option value="">Nenhum</option>';
 
-        foreach ( $pages as $page ) {
-            printf('<option value="%s" %s>%s (%s)</option>', $page->ID, $this->getDisplayWhatPageTermsSelected() == $page->ID ? 'selected' : '', $page->post_title, $page->ID );
+    //     foreach ( $pages as $page ) {
+    //         printf('<option value="%s" %s>%s (%s)</option>', $page->ID, $this->getWhatPageTermsSelected() == $page->ID ? 'selected' : '', $page->post_title, $page->ID );
         
-         }
-        echo "</select>";
+    //      }
+    //     echo "</select>";
 
-    } 
+    // } 
 
     /**
      * Prints input to custom title msg
@@ -562,7 +562,7 @@ class WP_Side_Comments_Admin
     {
         
         //TODO: recuperar HTML de outro local
-        printf( '<input type="text" id="%s" name="%s[%s]" value="%s"/>',
+        printf( '<input type="text" id="%s" class="large-text" name="%s[%s]" value="%s"/>',
             self::SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID,
             self::SETTINGS_OPTION_NAME,
             self::SETTINGS_SECTION_DISPLAY_TITLE_MSG_TERMS_FIELD_ID,
@@ -694,26 +694,26 @@ EOT;
      *
      * @return bool returns TRUE if the user is able, FALSE otherwise
      */
-    public function isDisplayConfirmTermsAllowed()
+    public function isConfirmTermsAllowed()
     {
         return isset($this->options[self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID])
         && $this->options[self::SETTINGS_SECTION_DISPLAY_CONFIRM_TERMS_SITE_FIELD_ID] == self::SETTINGS_SECTION_YES_VALUE;
     }
 
 
-    /**
-     *  
-     * @return string
-     */
-    public function getDisplayWhatPageTermsSelected()
-    {
-        if (isset($this->options[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID])) {
-            return $this->options[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID];
-        } 
-    }
+    // /**
+    //  *  
+    //  * @return string
+    //  */
+    // public function getWhatPageTermsSelected()
+    // {
+    //     if (isset($this->options[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID])) {
+    //         return $this->options[self::SETTINGS_SECTION_DISPLAY_WHAT_PAGE_TERMS_FIELD_ID];
+    //     } 
+    // }
 
      /**
-     *  
+     *  Get message title its terms
      * @return string
      */
     public function getTitleMsgTerms()
