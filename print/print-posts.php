@@ -22,7 +22,7 @@ if(intval(get_query_var('wp_side_comments_print_csv')) == 1)
 	header('Content-Disposition: attachment; filename='.date('Ymd').'_wp_side_comments_report.csv');
 	
 	$output = fopen('php://output', 'w');
-	fputcsv($output, array('Column 1', 'Column 2'), ';');
+	fputcsv($output, array(__('Parágrafos', 'wp-side-comments'), __('Número de cometários', 'wp-side-comments')), ';');
 	
 	if (have_posts())
 	{
