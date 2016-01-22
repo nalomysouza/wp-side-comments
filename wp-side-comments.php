@@ -98,6 +98,16 @@
 
 			// The theme to load - must be a string of the url to load 
 			global $WPSideCommentsAdmin;
+
+			// Termos de uso do site
+			if( $WPSideCommentsAdmin->isConfirmTermsAllowed()) {
+			
+			    if ( is_single() || is_page() ) {
+			        wp_enqueue_script('jquery-ui-dialog');
+			        wp_enqueue_script('terms-of-use', CTLT_WP_SIDE_COMMENTS_PLUGIN_URL . 'includes/js/terms-of-use.js');
+			        wp_localize_script('terms-of-use', 'vars', array( 'ajaxurl' => admin_url('admin-ajax.php'), 'terms_of_use_title' =>  $WPSideCommentsAdmin->getTitleMsgTerms()));
+			    }
+			}
 			
 			if( strlen($WPSideCommentsAdmin->getDefaultThemeCss()) <= 2 )
 				$theme = apply_filters( 'wp_side_comments_css_theme', CTLT_WP_SIDE_COMMENTS_PLUGIN_URL . 'includes/css/themes/default-theme.css');
@@ -136,17 +146,6 @@
 			$data['containerSelector'] = apply_filters( 'wp_side_comments_container_css_selector', '.commentable-container' );
 
 			wp_localize_script( 'wp-side-comments-script', 'commentsData', $data );
-
-			// Termos de uso do site
-			if( $WPSideCommentsAdmin->isConfirmTermsAllowed()) {
-			
-			    if ( is_single() || is_page() ) {
-			        wp_enqueue_script('jquery-ui-dialog');
-			        wp_enqueue_script('terms-of-use', CTLT_WP_SIDE_COMMENTS_PLUGIN_URL . 'includes/js/terms-of-use.js');
-			        wp_localize_script('terms-of-use', 'vars', array( 'ajaxurl' => admin_url('admin-ajax.php'), 'terms_of_use_title' =>  $WPSideCommentsAdmin->getTitleMsgTerms()));
-			    }
-			}
-
 
 		}/* wp_enqueue_scripts__loadScriptsAndStyles() */
 
