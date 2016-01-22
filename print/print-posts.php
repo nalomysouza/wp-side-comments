@@ -60,7 +60,7 @@ if(intval(get_query_var('wp_side_comments_print_csv')) == 1)
 				}
 				
 				fputcsv($output , array(
-						wp_side_comments_wordslimit(strip_tags($paragraphs[$i]), 5),
+						wp_trim_words(strip_tags($paragraphs[$i]), 5, ' ...'),
 						count($comments),
 				), ';');
 			}

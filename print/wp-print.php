@@ -311,14 +311,5 @@ function wp_side_comments_get_print_link($texto = false, $imagem = false)
 	return $html;
 }
 
-function wp_side_comments_wordslimit($string,$words=3,$ellipsis=' ...') {
-	$new = preg_replace('/((\w+\W*){'.($words-1).'}(\w+))(.*)/', '${1}', $string);
-	if($new != $string){
-		return $new.$ellipsis;
-	}else{
-		return $string;
-	}
-
-}
 
 ?>
