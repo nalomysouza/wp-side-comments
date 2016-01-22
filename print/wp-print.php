@@ -32,6 +32,7 @@ add_filter('query_vars', 'print_variables');
 function print_variables($public_query_vars) {
 	$public_query_vars[] = 'wp_side_comments_print';
 	$public_query_vars[] = 'wp_side_comments_printpage';
+	$public_query_vars[] = 'wp_side_comments_print_csv';
     $public_query_vars[] = 'number-options';
 	return $public_query_vars;
 }
@@ -39,7 +40,7 @@ function print_variables($public_query_vars) {
 ### Function: Load WP-Print
 function wp_side_comments_print()
 {
-	if(intval(get_query_var('wp_side_comments_print')) == 1 || intval(get_query_var('wp_side_comments_printpage')) == 1)
+	if(intval(get_query_var('wp_side_comments_print')) == 1 || intval(get_query_var('wp_side_comments_printpage')) == 1 || intval(get_query_var('wp_side_comments_print_csv')) == 1  )
 	{
         global $wp_query;
         $wp_query->set('posts_per_page', get_query_var('number-options'));
@@ -309,5 +310,6 @@ function wp_side_comments_get_print_link($texto = false, $imagem = false)
 	}
 	return $html;
 }
+
 
 ?>

@@ -15,9 +15,62 @@
 |																 |
 +----------------------------------------------------------------+
 */
-?>
 
-<?php global $text_direction; ?>
+if(intval(get_query_var('wp_side_comments_print_csv')) == 1)
+{
+	header('Content-Type: text/csv; charset=utf-8');
+	header('Content-Disposition: attachment; filename='.date('Ymd').'_wp_side_comments_report.csv');
+	
+	$output = fopen('php://output', 'w');
+	fputcsv($output, array(__('Parágrafos', 'wp-side-comments'), __('Número de cometários', 'wp-side-comments')), ';');
+	
+	if (have_posts())
+	{
+		while (have_posts())
+		{
+			the_post();
+	
+			$regex = '|(<p)[^>]*(>)|';
+			$paragraphs = preg_split($regex, print_content(false));
+			
+			global $CTLT_WP_Side_Comments;
+			if(!is_object($CTLT_WP_Side_Comments))
+			{
+				$CTLT_WP_Side_Comments = new CTLT_WP_Side_Comments();
+			}
+			
+			$sidecomments = $CTLT_WP_Side_Comments->getCommentsData(get_the_ID());
+			if(is_array($sidecomments) && array_key_exists('comments', $sidecomments) && is_array($sidecomments['comments']))
+			{
+				$sidecomments = $sidecomments['comments'];
+			}
+			else
+			{
+				$sidecomments = array();
+			}
+			
+			for($i = 1; $i < count($paragraphs); $i++)
+			{
+				
+				//echo print_r();
+				$comments = array();
+				if(array_key_exists($i, $sidecomments))
+				{
+					$comments = $sidecomments[$i];
+				}
+				
+				fputcsv($output , array(
+						wp_trim_words(strip_tags($paragraphs[$i]), 5, ' ...'),
+						count($comments),
+				), ';');
+			}
+		}
+	}
+	fclose($output);
+	die();
+}
+
+global $text_direction; ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
 <head>
