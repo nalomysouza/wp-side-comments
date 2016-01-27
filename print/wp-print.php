@@ -34,6 +34,7 @@ function print_variables($public_query_vars) {
 	$public_query_vars[] = 'wp_side_comments_printpage';
 	$public_query_vars[] = 'wp_side_comments_print_csv';
     $public_query_vars[] = 'number-options';
+    $public_query_vars[] = 'wp_side_comments_print_parent';
 	return $public_query_vars;
 }
 
@@ -42,9 +43,36 @@ function wp_side_comments_print()
 {
 	if(intval(get_query_var('wp_side_comments_print')) == 1 || intval(get_query_var('wp_side_comments_printpage')) == 1 || intval(get_query_var('wp_side_comments_print_csv')) == 1  )
 	{
-        global $wp_query;
-        $wp_query->set('posts_per_page', get_query_var('number-options'));
-        query_posts($wp_query->query_vars);
+		global $wp_query;
+		
+		if(intval(get_query_var('wp_side_comments_print_parent')) == 1)
+		{
+        	$post = get_post();
+        	
+        	$current_post_id = get_the_ID();
+        	
+        	$parent = $post->post_parent;
+        	
+        	if( $parent == 0 )
+        		$parent = $current_post_id;
+        	
+        	$pages = get_pages( array( 'parent' => $parent, 'sort_column' => 'title', 'sort_order' => 'asc', 'number' => '6' ) );
+        	$wp_query = new WP_Query( array(
+        			'post_parent' => $parent,
+        			'orderby' => 'title',
+        			'order' => 'ASC',
+        			'post_type' => get_post_type(),
+					'post_status' => 'publish'
+        	));
+		}
+		
+		//TODO FIX posts_per_page
+		/*$args = array_merge( $wp_query->query_vars, array( 'post_type' => 'product' ) );
+		query_posts( $args );
+		
+		$wp_query->set('posts_per_page', get_query_var('number-options'));
+		query_posts($wp_query->query_vars);*/
+        
 		include(WP_PLUGIN_DIR.'/wp-side-comments/print/print.php');
 		exit();
 	}
