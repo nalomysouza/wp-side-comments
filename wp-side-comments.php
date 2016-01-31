@@ -13,11 +13,18 @@
 		die( '-1' );
 	}
 
+	if(!defined('__DIR__')) {
+		$iPos = strrpos(__FILE__, DIRECTORY_SEPARATOR);
+		define("__DIR__", substr(__FILE__, 0, $iPos) . DIRECTORY_SEPARATOR);
+	}
+	
 	define( 'CTLT_WP_SIDE_COMMENTS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 	define( 'CTLT_WP_SIDE_COMMENTS_PLUGIN_PATH', plugin_dir_path(__FILE__) );
 	
 	//includes wp side comments admin class
 	require_once CTLT_WP_SIDE_COMMENTS_PLUGIN_PATH . 'classes/class-wp-side-comments-admin.php';
+	
+	require_once __DIR__.'/print/wp-print.php';
 
 	class CTLT_WP_Side_Comments
 	{
@@ -320,7 +327,8 @@
 					'comment' => $commentData->comment_content,
           'commentID' => $commentData->comment_ID,
 					'authorID' => $commentData->user_id,
-          'parentID' => $commentData->comment_parent
+          'parentID' => $commentData->comment_parent,
+					'commentObj' => $commentData
 				);
 
 				if( $sideComment && $sideComment != '' ){
