@@ -25,6 +25,8 @@ use this query vars on url:
 
 wp_side_comments_print=1 -> Print post
 wp_side_comments_printpage=1 -> Print with Page layout
-wp_side_comments_print_csv=1 -> Export Csv with post data 
+wp_side_comments_print_csv=1 -> Export Csv with comment number per paragraph
+wp_side_comments_print_csv=2 -> Export Csv with comment number per date
+wp_side_comments_print_csv=3 -> Export Csv with comment number per author
 number-options -> limit number of posts to print 
 wp_side_comments_print_parent=1 -> Print post parent parents
