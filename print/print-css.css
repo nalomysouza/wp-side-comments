@@ -33,7 +33,7 @@ Body {
 }
 #BlogTitle {
 	font-weight: bold;
-	font-size: 16px;
+	font-size: 18px;
 	margin-bottom: 5px;
 }
 #BlogDate {
@@ -51,7 +51,7 @@ HR.Divider {
 }
 #CommentTitle {
 	font-weight: bold;
-	font-size: 16px;
+	font-size: 14px;
 	padding-bottom: 10px;
 }
 .CommentDate {

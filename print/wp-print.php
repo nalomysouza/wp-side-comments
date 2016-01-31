@@ -41,7 +41,7 @@ function print_variables($public_query_vars) {
 ### Function: Load WP-Print
 function wp_side_comments_print()
 {
-	if(intval(get_query_var('wp_side_comments_print')) == 1 || intval(get_query_var('wp_side_comments_printpage')) == 1 || intval(get_query_var('wp_side_comments_print_csv')) == 1  )
+	if(intval(get_query_var('wp_side_comments_print')) == 1 || intval(get_query_var('wp_side_comments_printpage')) == 1 || intval(get_query_var('wp_side_comments_print_csv')) > 0  )
 	{
 		global $wp_query;
 		
@@ -51,18 +51,24 @@ function wp_side_comments_print()
         	
         	$current_post_id = get_the_ID();
         	
+        	global $parent;
         	$parent = $post->post_parent;
-        	
         	if( $parent == 0 )
+        	{
         		$parent = $current_post_id;
+        	}
         	
-        	$pages = get_pages( array( 'parent' => $parent, 'sort_column' => 'title', 'sort_order' => 'asc', 'number' => '6' ) );
+        	add_filter( 'posts_where' , 'wp_side_comments_print_posts_where' );
+        	
+        	//$pages = get_pages( array( 'parent' => $parent, 'sort_column' => 'title', 'sort_order' => 'asc', 'number' => '6' ) );
         	$wp_query = new WP_Query( array(
         			'post_parent' => $parent,
         			'orderby' => 'title',
         			'order' => 'ASC',
         			'post_type' => get_post_type(),
-					'post_status' => 'publish'
+					'post_status' => 'publish',
+        			'include' => $parent,
+        			'wp_side_comments_print_csv' => get_query_var('wp_side_comments_print_csv', false),
         	));
 		}
 		
@@ -168,9 +174,6 @@ function print_categories($before = '', $after = '', $parents = '')
 ### Function: Print Comments Content
 function print_comments_content($display = true) {
 	global $links_text, $link_number, $max_link_number, $matched_links;
-    if (!isset($link_text) && isset($link_url)) {
-        $link_text = $link_url;
-    }
 
 	if (!isset($matched_links)) {
 		$matched_links = array();
@@ -188,6 +191,8 @@ function print_comments_content($display = true) {
 		for ($i=0; $i < count($matches[0]); $i++) {
 			$link_match = $matches[0][$i];
 			$link_url = $matches[2][$i];
+			$link_text = $matches[4][$i];
+			
 			if(stristr($link_url, 'https://')) {
 				 $link_url =(strtolower(substr($link_url,0,8)) != 'https://') ?get_option('home') . $link_url : $link_url;
 			} else if(stristr($link_url, 'mailto:')) {
@@ -233,7 +238,7 @@ function print_comments_number($comments = false) {
 	global $post;
 	$comment_text = '';
 	$comment_status = $post->comment_status;
-	if($comment_status == 'open')
+	if($comment_status == 'open' || (is_array($comments) && count($comments) > 0 ))
 	{
 		$num_comments = 0;
 		if($comments)
@@ -339,5 +344,40 @@ function wp_side_comments_get_print_link($texto = false, $imagem = false)
 	return $html;
 }
 
+function wp_side_comments_manage_posts_columns($columns)
+{
+	return array_merge( $columns,
+		array( 'wp_side_comments_print' => __( 'Print', 'wp-side-comments' ) ) );
+}
+add_filter( 'manage_posts_columns' , 'wp_side_comments_manage_posts_columns' );
+add_filter( 'manage_pages_columns' , 'wp_side_comments_manage_posts_columns' );
+
+function wp_side_comments_display_posts_print( $column, $post_id )
+{
+	if ($column == 'wp_side_comments_print'){
+		echo '<a href="'.get_the_permalink($post_id).'?wp_side_comments_print=1&wp_side_comments_print_parent=1;" target="_blank" ><span class="wp-side-comments-icon-print-1" onclick="" ></span></a>';
+		echo '<a href="'.get_the_permalink($post_id).'?wp_side_comments_print_csv=1&wp_side_comments_print_parent=1;" target="_blank" ><span class="wp-side-comments-icon-grid" ></span></a>';
+		echo '<a href="'.get_the_permalink($post_id).'?wp_side_comments_print_csv=2&wp_side_comments_print_parent=1;" target="_blank" ><span class="wp-side-comments-icon-calendar-alt" ></span></a>';
+		echo '<a href="'.get_the_permalink($post_id).'?wp_side_comments_print_csv=3&wp_side_comments_print_parent=1;" target="_blank" ><span class="wp-side-comments-icon-user-pair" ></span></a>';
+	}
+}
+add_action( 'manage_posts_custom_column' , 'wp_side_comments_display_posts_print', 10, 2 );
+add_action( 'manage_pages_custom_column' , 'wp_side_comments_display_posts_print', 10, 2 );
+
+function wp_side_comments_scripts()
+{
+	wp_enqueue_style( 'wp-side-comments-print-fonts', plugin_dir_url(__FILE__).'/fonts/css/wp-side-comments-print.css' );
+	wp_enqueue_style( 'wp-side-comments-print', plugin_dir_url(__FILE__).'/admin.css' );
+}
+add_action( 'admin_enqueue_scripts', 'wp_side_comments_scripts' );
+
+function wp_side_comments_print_posts_where( $where )
+{
+	global $parent;
+	
+	$where = " AND ( ID = ".$parent." OR ".substr($where, 4).")";
+	
+	return $where;
+}
 
 ?>
