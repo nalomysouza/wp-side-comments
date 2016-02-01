@@ -15,55 +15,121 @@
 |																 |
 +----------------------------------------------------------------+
 */
-
-if(intval(get_query_var('wp_side_comments_print_csv')) == 1)
+if(intval(get_query_var('wp_side_comments_print_csv')) > 0)
 {
 	header('Content-Type: text/csv; charset=utf-8');
 	header('Content-Disposition: attachment; filename='.date('Ymd').'_wp_side_comments_report.csv');
 	
 	$output = fopen('php://output', 'w');
-	fputcsv($output, array(__('Parágrafos', 'wp-side-comments'), __('Número de cometários', 'wp-side-comments')), ';');
 	
 	if (have_posts())
 	{
-		while (have_posts())
+		$allcomments = array();
+			
+		switch (intval(get_query_var('wp_side_comments_print_csv')))
 		{
-			the_post();
-	
-			$regex = '|(<p)[^>]*(>)|';
-			$paragraphs = preg_split($regex, print_content(false));
-			
-			global $CTLT_WP_Side_Comments;
-			if(!is_object($CTLT_WP_Side_Comments))
-			{
-				$CTLT_WP_Side_Comments = new CTLT_WP_Side_Comments();
-			}
-			
-			$sidecomments = $CTLT_WP_Side_Comments->getCommentsData(get_the_ID());
-			if(is_array($sidecomments) && array_key_exists('comments', $sidecomments) && is_array($sidecomments['comments']))
-			{
-				$sidecomments = $sidecomments['comments'];
-			}
-			else
-			{
-				$sidecomments = array();
-			}
-			
-			for($i = 1; $i < count($paragraphs); $i++)
-			{
-				
-				//echo print_r();
-				$comments = array();
-				if(array_key_exists($i, $sidecomments))
+			case 1:
+			default:
+				fputcsv($output, array(__('Parágrafos', 'wp-side-comments'), __('Número de cometários', 'wp-side-comments')), ';');
+				while (have_posts())
 				{
-					$comments = $sidecomments[$i];
+					the_post();
+					$regex = '|(<p)[^>]*(>)|';
+					$paragraphs = preg_split($regex, print_content(false));
+					
+					global $CTLT_WP_Side_Comments;
+					if(!is_object($CTLT_WP_Side_Comments))
+					{
+						$CTLT_WP_Side_Comments = new CTLT_WP_Side_Comments();
+					}
+					
+					$sidecomments = $CTLT_WP_Side_Comments->getCommentsData(get_the_ID());
+					if(is_array($sidecomments) && array_key_exists('comments', $sidecomments) && is_array($sidecomments['comments']))
+					{
+						$sidecomments = $sidecomments['comments'];
+					}
+					else
+					{
+						$sidecomments = array();
+					}
+					
+					for($i = 1; $i < count($paragraphs); $i++)
+					{
+						
+						//echo print_r();
+						$comments = array();
+						if(array_key_exists($i, $sidecomments))
+						{
+							$comments = $sidecomments[$i];
+						}
+						
+						fputcsv($output , array(
+								wp_trim_words(strip_tags($paragraphs[$i]), 5, ' ...'),
+								count($comments),
+						), ';');
+					}
+				}
+			break;
+			case 2:
+				fputcsv($output, array(__('Data', 'wp-side-comments'), __('Número de cometários', 'wp-side-comments')), ';');
+				while (have_posts())
+				{
+					the_post();
+					
+					$getCommentArgs = array(
+						'post_id' => get_the_ID(),
+						'status' => 'approve'
+					);
+					$comments = get_comments( $getCommentArgs );
+					
+					$allcomments = array_merge($allcomments, $comments);
+				}
+				$commentsDates = array();
+				foreach ($allcomments as $comment)
+				{
+					$date = date('Y/m/d', strtotime($comment->comment_date));
+					if(!array_key_exists($date, $commentsDates)) $commentsDates[$date] = 0;
+					$commentsDates[$date] += 1;
+				}
+				ksort($commentsDates);
+				foreach ($commentsDates as $key => $value)
+				{
+					fputcsv($output , array(
+							$key,
+							$value,
+					), ';');
+				}
+			break;
+			case 3:
+				fputcsv($output, array(__('Usuário', 'wp-side-comments'), __('Número de cometários', 'wp-side-comments')), ';');
+				while (have_posts())
+				{
+					the_post();
+						
+					$getCommentArgs = array(
+							'post_id' => get_the_ID(),
+							'status' => 'approve'
+					);
+					$comments = get_comments( $getCommentArgs );
+						
+					$allcomments = array_merge($allcomments, $comments);
+				}
+				$commentsUsers = array();
+				foreach ($allcomments as $comment)
+				{
+					$user = get_comment_author($comment->comment_ID);
+					if(!array_key_exists($user, $commentsUsers)) $commentsUsers[$user] = 0;
+					$commentsUsers[$user] += 1;
 				}
 				
-				fputcsv($output , array(
-						wp_trim_words(strip_tags($paragraphs[$i]), 5, ' ...'),
-						count($comments),
-				), ';');
-			}
+				foreach ($commentsUsers as $key => $value)
+				{
+					fputcsv($output , array(
+							$key,
+							$value,
+					), ';');
+				}
+			break;
 		}
 	}
 	fclose($output);
