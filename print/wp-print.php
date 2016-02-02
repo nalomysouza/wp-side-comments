@@ -355,10 +355,10 @@ add_filter( 'manage_pages_columns' , 'wp_side_comments_manage_posts_columns' );
 function wp_side_comments_display_posts_print( $column, $post_id )
 {
 	if ($column == 'wp_side_comments_print'){
-		echo '<a href="'.get_the_permalink($post_id).'?wp_side_comments_print=1&wp_side_comments_print_parent=1;" target="_blank" ><span class="wp-side-comments-icon-print-1" onclick="" ></span></a>';
-		echo '<a href="'.get_the_permalink($post_id).'?wp_side_comments_print_csv=1&wp_side_comments_print_parent=1;" target="_blank" ><span class="wp-side-comments-icon-grid" ></span></a>';
-		echo '<a href="'.get_the_permalink($post_id).'?wp_side_comments_print_csv=2&wp_side_comments_print_parent=1;" target="_blank" ><span class="wp-side-comments-icon-calendar-alt" ></span></a>';
-		echo '<a href="'.get_the_permalink($post_id).'?wp_side_comments_print_csv=3&wp_side_comments_print_parent=1;" target="_blank" ><span class="wp-side-comments-icon-user-pair" ></span></a>';
+		echo '<a href="'.get_the_permalink($post_id).'?wp_side_comments_print=1&wp_side_comments_print_parent=1;" target="_blank" title="'.__('Imprimir textos com comentários por parágrafo.','wp-side-comments').'" ><span class="wp-side-comments-icon-print-1" onclick="" ></span></a>';
+		echo '<a href="'.get_the_permalink($post_id).'?wp_side_comments_print_csv=1&wp_side_comments_print_parent=1;" target="_blank" title="'.__('Exportar CSV com número de comentários por parágrafo','wp-side-comments').'" ><span class="wp-side-comments-icon-grid" ></span></a>';
+		echo '<a href="'.get_the_permalink($post_id).'?wp_side_comments_print_csv=2&wp_side_comments_print_parent=1;" target="_blank" title="'.__('Exportar CSV com número de comentários por dia','wp-side-comments').'" ><span class="wp-side-comments-icon-calendar-alt" ></span></a>';
+		echo '<a href="'.get_the_permalink($post_id).'?wp_side_comments_print_csv=3&wp_side_comments_print_parent=1;" target="_blank" title="'.__('Exportar CSV com número de comentários por usuário','wp-side-comments').'" ><span class="wp-side-comments-icon-user-pair" ></span></a>';
 	}
 }
 add_action( 'manage_posts_custom_column' , 'wp_side_comments_display_posts_print', 10, 2 );
