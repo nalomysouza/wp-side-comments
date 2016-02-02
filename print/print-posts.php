@@ -30,7 +30,7 @@ if(intval(get_query_var('wp_side_comments_print_csv')) > 0)
 		{
 			case 1:
 			default:
-				fputcsv($output, array(__('Parágrafos', 'wp-side-comments'), __('Número de cometários', 'wp-side-comments')), ';');
+				fputcsv($output, array(__('Parágrafos', 'wp-side-comments'), __('Número de cometários', 'wp-side-comments'), __('Autores', 'wp-side-comments')), ';');
 				while (have_posts())
 				{
 					the_post();
@@ -55,17 +55,25 @@ if(intval(get_query_var('wp_side_comments_print_csv')) > 0)
 					
 					for($i = 1; $i < count($paragraphs); $i++)
 					{
-						
+						$authors = array();
 						//echo print_r();
 						$comments = array();
 						if(array_key_exists($i, $sidecomments))
 						{
 							$comments = $sidecomments[$i];
 						}
+						foreach ($comments as $comment)
+						{
+							$authors[] = $comment['authorName'];
+						}
+						
+						$authors = array_unique($authors);
+						sort($authors);
 						
 						fputcsv($output , array(
 								wp_trim_words(strip_tags($paragraphs[$i]), 5, ' ...'),
 								count($comments),
+								implode(', ', $authors) ,
 						), ';');
 					}
 				}
