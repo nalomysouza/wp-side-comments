@@ -67,10 +67,13 @@ if(intval(get_query_var('wp_side_comments_print_csv')) > 0)
 							$authors[] = $comment['authorName'];
 						}
 						
+						$authors = array_unique($authors);
+						sort($authors);
+						
 						fputcsv($output , array(
 								wp_trim_words(strip_tags($paragraphs[$i]), 5, ' ...'),
 								count($comments),
-								implode(', ', $authors),
+								implode(', ', $authors) ,
 						), ';');
 					}
 				}
