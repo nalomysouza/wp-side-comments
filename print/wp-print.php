@@ -79,7 +79,7 @@ function wp_side_comments_print()
 		$wp_query->set('posts_per_page', get_query_var('number-options'));
 		query_posts($wp_query->query_vars);*/
         
-		include(WP_PLUGIN_DIR.'/wp-side-comments/print/print.php');
+		include(CTLT_WP_SIDE_COMMENTS_PLUGIN_PATH .'print/print.php');
 		exit();
 	}
 }
@@ -278,7 +278,7 @@ function print_template_comments($file = '') {
 	if(file_exists(TEMPLATEPATH.'/print-comments.php')) {
 		$file = TEMPLATEPATH.'/print-comments.php';
 	} else {
-		$file = WP_PLUGIN_DIR.'/wp-side-comments/print/print-comments.php';
+		$file = CTLT_WP_SIDE_COMMENTS_PLUGIN_PATH .'print/print-comments.php';
 	}
 	return $file;
 }

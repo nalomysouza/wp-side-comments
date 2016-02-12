@@ -38,6 +38,6 @@ $withcomments = true;
 if(file_exists(TEMPLATEPATH.'/print-posts.php')) {
 	include(TEMPLATEPATH.'/print-posts.php');
 } else {
-	include(WP_PLUGIN_DIR.'/wp-side-comments/print/print-posts.php');
+	include(CTLT_WP_SIDE_COMMENTS_PLUGIN_PATH . 'print/print-posts.php');
 }
 ?>
