@@ -740,41 +740,41 @@
 		}
 
 
-		function wp_preprocess_comment_handler( $commentdata ) {
+		function wp_preprocess_comment_handler( $args ) {
 		    global $wpdb, $WPSideCommentsAdmin;
 
 		    $user_id = get_current_user_id();  
 
 		    $WPSideCommentsAdmin->getTitleMsgTerms();
 
-		    if ( get_user_meta($user_id, $wpdb->prefix . 'accept_the_terms_of_site', true) == false ) {
-		        wp_die( $WPSideCommentsAdmin->getTitleMsgTerms(),'Termos de uso', array('back_link'=>true));
-		        return false;
-		    }
+			// se exigir termos de uso
+			if( $WPSideCommentsAdmin->isConfirmTermsAllowed() ) {
+
+			    if ( get_user_meta($user_id, $wpdb->prefix . 'accept_the_terms_of_site', true) == false ) {
+			        wp_die( $WPSideCommentsAdmin->getTitleMsgTerms(),'Termos de uso', array('back_link'=>true));
+			        return false;
+			    }
+			}
 
 		    //some code
-		    return $commentdata;
+		    return $args;
 		}
 
 
 
-		function wp_side_comments_preprocess_side_comment( $arg ) {
-		    global $wpdb;
+		// function wp_side_comments_preprocess_side_comment( $arg ) {
+		//     global $wpdb;
 
-		    $user_id = get_current_user_id();  
+		//     $user_id = get_current_user_id();  
 
-		    if ( get_user_meta($user_id, $wpdb->prefix . 'accept_the_terms_of_site', true) == false ) {
-		        wp_die('Para comentar você precisa concordar com os termo de uso do site','Termos de uso', array('back_link'=>true));
-		        return false;
-		    }
+		//     if ( get_user_meta($user_id, $wpdb->prefix . 'accept_the_terms_of_site', true) == false ) {
+		//         wp_die('Para comentar você precisa concordar com os termo de uso do site','Termos de uso', array('back_link'=>true));
+		//         return false;
+		//     }
 
-		    //some code
-		    return $arg;
-		}
-
-
-
-
+		//     //some code
+		//     return $arg;
+		// }
 
 		/**
 		 * Method to determine if we're on the right place to load our scripts/styles and do our bits and pieces
