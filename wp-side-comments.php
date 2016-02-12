@@ -357,6 +357,8 @@
 					$toAdd['sideComment'] = $section;
 				}
 
+				$toAdd = apply_filters( 'wp_side_post_comment_data', $toAdd, $commentData->comment_ID );
+
 				$sideCommentData[$section][] = $toAdd;
 
 			}
