@@ -471,7 +471,10 @@
 		public static function get_avatar_url( $email )
 		{
 
-			$avatar_html = get_avatar( $email, 24, 'blank' );
+			$avatar_size = apply_filters( 'wp_side_comments_avatar_size', 24 );
+
+			$avatar_html = get_avatar( $email, $avatar_size, 'blank' );
+			
 			// strip the avatar url from the get_avatar img tag.
 			preg_match('/src=["|\'](.+)[\&|"|\']/U', $avatar_html, $matches);
 
