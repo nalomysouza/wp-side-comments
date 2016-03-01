@@ -380,4 +380,6 @@ function wp_side_comments_print_posts_where( $where )
 	return $where;
 }
 
+require dirname(__FILE__)."/print-bulk.php";
+
 ?>
