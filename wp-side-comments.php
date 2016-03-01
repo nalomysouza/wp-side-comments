@@ -64,6 +64,14 @@
 			// When side comments are removed, the totals are wrong on the front-end
 			add_filter( 'get_comments_number', array( $this, 'get_comments_number__adjustCommentsNumberToRemoveSidecomments' ), 10, 2 );
 
+			add_action('wp_ajax_get_usermeta_confirm_terms', array( $this,'wp_ajax_get_usermeta_confirm_terms'));
+
+			add_action('wp_ajax_register_confirm_terms', array( $this,'wp_ajax_register_confirm_terms'));
+
+			add_filter( 'wp_side_comments_default_comment_approved_status' , array( $this,'wp_side_comments_preprocess_side_comment' ));
+
+			add_filter( 'preprocess_comment' , array( $this,'wp_preprocess_comment_handler' ));
+		
 		}/* __construct() */
 
 
@@ -90,6 +98,20 @@
 
 			// The theme to load - must be a string of the url to load 
 			global $WPSideCommentsAdmin;
+
+			// mostrar confirmação dos termos apenas se o usuário estiver logado.
+			if( is_user_logged_in() ) {
+
+				// Termos de uso do site
+				if( $WPSideCommentsAdmin->isConfirmTermsAllowed()) {
+				
+				    if ( is_single() || is_page() ) {
+				        wp_enqueue_script('jquery-ui-dialog');
+				        wp_enqueue_script('terms-of-use', CTLT_WP_SIDE_COMMENTS_PLUGIN_URL . 'includes/js/terms-of-use.js');
+				        wp_localize_script('terms-of-use', 'vars', array( 'ajaxurl' => admin_url('admin-ajax.php'), 'terms_of_use_title' =>  $WPSideCommentsAdmin->getTitleMsgTerms()));
+				    }
+				}
+			}
 			
 			if( strlen($WPSideCommentsAdmin->getDefaultThemeCss()) <= 2 )
 				$theme = apply_filters( 'wp_side_comments_css_theme', CTLT_WP_SIDE_COMMENTS_PLUGIN_URL . 'includes/css/themes/default-theme.css');
@@ -335,6 +357,8 @@
 					$toAdd['sideComment'] = $section;
 				}
 
+				$toAdd = apply_filters( 'wp_side_post_comment_data', $toAdd, $commentData->comment_ID );
+
 				$sideCommentData[$section][] = $toAdd;
 
 			}
@@ -447,7 +471,10 @@
 		public static function get_avatar_url( $email )
 		{
 
-			$avatar_html = get_avatar( $email, 24, 'blank' );
+			$avatar_size = apply_filters( 'wp_side_comments_avatar_size', 24 );
+
+			$avatar_html = get_avatar( $email, $avatar_size, 'blank' );
+			
 			// strip the avatar url from the get_avatar img tag.
 			preg_match('/src=["|\'](.+)[\&|"|\']/U', $avatar_html, $matches);
 
@@ -682,6 +709,75 @@
 
 
 
+		function wp_ajax_get_usermeta_confirm_terms() {
+		    // se não tiver logado não precisa perguntar sobre os termos
+		    if( !is_user_logged_in() )
+		        return true;
+
+		    global $wpdb;
+
+		    $user_id = get_current_user_id();        
+
+		    echo get_user_meta($user_id, $wpdb->prefix . 'accept_the_terms_of_site', true);
+		               
+		    die;
+		}
+		
+
+
+		// ajax handle
+		function wp_ajax_register_confirm_terms() {
+
+		    if( !is_user_logged_in() )
+		        return false;
+
+		    global $wpdb;
+
+		    $user_id = get_current_user_id();   
+
+		    $today = gmdate('Y-m-d H:i:s' );
+
+		    echo update_user_meta( $user_id, $wpdb->prefix . 'accept_the_terms_of_site', $today);
+		    
+		    die;
+		}
+
+
+		function wp_preprocess_comment_handler( $args ) {
+		    global $wpdb, $WPSideCommentsAdmin;
+
+		    $user_id = get_current_user_id();  
+
+		    $WPSideCommentsAdmin->getTitleMsgTerms();
+
+			// se exigir termos de uso
+			if( $WPSideCommentsAdmin->isConfirmTermsAllowed() ) {
+
+			    if ( get_user_meta($user_id, $wpdb->prefix . 'accept_the_terms_of_site', true) == false ) {
+			        wp_die( $WPSideCommentsAdmin->getTitleMsgTerms(),'Termos de uso', array('back_link'=>true));
+			        return false;
+			    }
+			}
+
+		    //some code
+		    return $args;
+		}
+
+
+
+		// function wp_side_comments_preprocess_side_comment( $arg ) {
+		//     global $wpdb;
+
+		//     $user_id = get_current_user_id();  
+
+		//     if ( get_user_meta($user_id, $wpdb->prefix . 'accept_the_terms_of_site', true) == false ) {
+		//         wp_die('Para comentar você precisa concordar com os termo de uso do site','Termos de uso', array('back_link'=>true));
+		//         return false;
+		//     }
+
+		//     //some code
+		//     return $arg;
+		// }
 
 		/**
 		 * Method to determine if we're on the right place to load our scripts/styles and do our bits and pieces
