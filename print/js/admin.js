@@ -1,8 +1,11 @@
 
 
 jQuery(document).ready(function() {
-	jQuery('<option>').val('export').text('<?php _e('Export')?>').appendTo("select[name='action']");
-	jQuery('<option>').val('export').text('<?php _e('Export')?>').appendTo("select[name='action2']");
+	jQuery.each(ctlt_bulk_print.actions, function(index, value) {
+		jQuery('<option>').val(index).text(value.label).appendTo("select[name='action']");
+		jQuery('<option>').val(index).text(value.label).appendTo("select[name='action2']");
+	});
+	
 });
 
 

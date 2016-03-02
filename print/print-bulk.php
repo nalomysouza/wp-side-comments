@@ -15,10 +15,10 @@ class BulkPrint
 	{
 		//Bulk actions
 		
-		add_action('admin_footer-edit.php', array( $this, 'admin_scripts'));
+		add_action('admin_print_scripts', array( $this, 'admin_scripts'));
 		
 		add_action('load-edit.php',         array( $this, 'bulk_action'));
-		add_action('admin_notices',         array( $this, 'bulk_admin_notices'));
+		//add_action('admin_notices',         array( $this, 'admin_notices'));
 	}
 	
 	/**
@@ -27,10 +27,20 @@ class BulkPrint
 	function admin_scripts()
 	{
 		global $post_type;
-			
-		if($post_type == 'post' || $post_type == 'page')
+		
+		$currentScreen = get_current_screen();
+		
+		if( $currentScreen->id == 'edit-page' && ( $post_type == 'post' || $post_type == 'page') )
 		{
-			wp_enqueue_script('ctlt-side-comments-bulk-print', CTLT_WP_SIDE_COMMENTS_PLUGIN_URL."/print/js/admin.js", array('jquery'));
+			wp_enqueue_script('ctlt-side-comments-bulk-print', CTLT_WP_SIDE_COMMENTS_PLUGIN_URL."/print/js/admin.js", array('jquery'), '1.0', true);
+			wp_localize_script('ctlt-side-comments-bulk-print', 'ctlt_bulk_print', array('actions' => 
+				array(
+					'print' => array( 'label' => __('Print', 'wp-side-comments') ),
+					'export' => array( 'label' => __('CSV by paragraph', 'wp-side-comments') ),
+					'export_day' => array( 'label' => __('CSV by day', 'wp-side-comments') ),
+					'export_user' => array( 'label' => __('CSV by user', 'wp-side-comments') ),
+				)
+			));
 	   	}
 	}
 			
@@ -40,7 +50,7 @@ class BulkPrint
 	 * 
 	 * Based on the post http://wordpress.stackexchange.com/questions/29822/custom-bulk-action
 	 */
-	function custom_bulk_action()
+	function bulk_action()
 	{
 		global $typenow;
 		$post_type = $typenow;
@@ -51,7 +61,7 @@ class BulkPrint
 			$wp_list_table = _get_list_table('WP_Posts_List_Table');  // depending on your resource type this could be WP_Users_List_Table, WP_Comments_List_Table, etc
 			$action = $wp_list_table->current_action();
 			
-			$allowed_actions = array("export");
+			$allowed_actions = array('print', "export", 'export_day', 'export_user');
 			if(!in_array($action, $allowed_actions)) return;
 			
 			// security check
@@ -64,61 +74,51 @@ class BulkPrint
 			
 			if(empty($post_ids)) return;
 			
-			// this is based on wp-admin/edit.php
-			$sendback = remove_query_arg( array('exported', 'untrashed', 'deleted', 'ids'), wp_get_referer() );
-			if ( ! $sendback )
-				$sendback = admin_url( "edit.php?post_type=$post_type" );
+			global $wp_query;
 			
-			$pagenum = $wp_list_table->get_pagenum();
-			$sendback = add_query_arg( 'paged', $pagenum, $sendback );
-			
-			switch($action) {
+			switch($action)
+			{
 				case 'export':
-					
-					// if we set up user permissions/capabilities, the code might look like:
-					//if ( !current_user_can($post_type_object->cap->export_post, $post_id) )
-					//	wp_die( __('You are not allowed to export this post.') );
-					
-					$exported = 0;
-					foreach( $post_ids as $post_id ) {
-						
-						if ( !$this->perform_export($post_id) )
-							wp_die( __('Error exporting post.') );
-		
-						$exported++;
-					}
-					
-					$sendback = add_query_arg( array('exported' => $exported, 'ids' => join(',', $post_ids) ), $sendback );
+					$wp_query = new \WP_Query( array(
+						'post__in' => $post_ids,
+						'orderby' => 'title',
+						'order' => 'ASC',
+						'post_type' => $post_type,
+						'wp_side_comments_print_csv' => 1,
+					));
 				break;
-				
+				case 'export_day':
+					$wp_query = new \WP_Query( array(
+						'post__in' => $post_ids,
+						'orderby' => 'title',
+						'order' => 'ASC',
+						'post_type' => $post_type,
+						'wp_side_comments_print_csv' => 2,
+					));
+				break;
+				case 'export_user':
+					$wp_query = new \WP_Query( array(
+						'post__in' => $post_ids,
+						'orderby' => 'title',
+						'order' => 'ASC',
+						'post_type' => $post_type,
+						'wp_side_comments_print_csv' => 3,
+					));
+				break;
+				case 'print':
+					$wp_query = new \WP_Query( array(
+							'post__in' => $post_ids,
+							'orderby' => 'title',
+							'order' => 'ASC',
+							'post_type' => $post_type,
+					));
+				break;
 				default: return;
 			}
 			
-			$sendback = remove_query_arg( array('action', 'action2', 'tags_input', 'post_author', 'comment_status', 'ping_status', '_status',  'post', 'bulk_edit', 'post_view'), $sendback );
-			
-			wp_redirect($sendback);
+			include(CTLT_WP_SIDE_COMMENTS_PLUGIN_PATH .'print/print.php');
 			exit();
 		}
-	}
-	
-	
-	/**
-	 * Display an admin notice on the Posts page after print
-	 */
-	function custom_bulk_admin_notices()
-	{
-		global $post_type, $pagenow;
-		
-		if($pagenow == 'edit.php' && $post_type == 'post' && isset($_REQUEST['exported']) && (int) $_REQUEST['exported']) {
-			$message = sprintf( _n( 'Post exported.', '%s posts exported.', $_REQUEST['exported'] ), number_format_i18n( $_REQUEST['exported'] ) );
-			echo "<div class=\"updated\"><p>{$message}</p></div>";
-		}
-	}
-	
-	function perform_export($post_id)
-	{
-		// do whatever work needs to be done
-		return true;
 	}
 	
 }
