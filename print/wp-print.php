@@ -380,6 +380,65 @@ function wp_side_comments_print_posts_where( $where )
 	return $where;
 }
 
+/**
+ * Get meta data by meta object type
+ *
+ * @global wpdb $wpdb WordPress database abstraction object.
+ *
+ * @param string $meta_type Type of object metadata is for (e.g., comment, post, term, or user).
+ * @return object|false Meta object or false.
+ */
+function wp_side_comments_getMetadataByType( $meta_type = 'post' )
+{
+	global $wpdb;
+
+	if ( ! $meta_type ) {
+		return false;
+	}
+
+	$table = _get_meta_table( $meta_type );
+	if ( ! $table ) {
+		return false;
+	}
+
+	$meta = $wpdb->get_col( " SELECT DISTINCT meta_key FROM $table WHERE meta_key NOT LIKE '\_%' ");
+
+	if ( empty( $meta ) )
+	{
+		return false;
+	}
+
+	if($meta_type == 'user')
+	{
+		$meta = array_filter($meta, function($meta)
+		{
+			global $wpdb;
+			$defaults_metas = array(
+					'nickname',
+					'first_name',
+					'last_name',
+					'description',
+					'rich_editing',
+					'comment_shortcuts',
+					'admin_color',
+					'use_ssl',
+					'show_admin_bar_front',
+					$wpdb->prefix.'capabilities',
+					$wpdb->prefix.'user_level',
+					'dismissed_wp_pointers',
+					'show_welcome_panel',
+					'session_tokens',
+					$wpdb->prefix.'dashboard_quick_press_last_post_id',
+					'closedpostboxes_page',
+					'metaboxhidden_page'
+			);
+			return !in_array($meta, $defaults_metas);
+		});
+	}
+
+	return $meta;
+}
+
 require dirname(__FILE__)."/print-bulk.php";
 
 ?>

@@ -109,7 +109,7 @@ if(intval(get_query_var('wp_side_comments_print_csv')) > 0)
 				}
 			break;
 			case 3:
-				fputcsv($output, array(__('Usuário', 'wp-side-comments'), __('Número de cometários', 'wp-side-comments')), ';');
+				
 				while (have_posts())
 				{
 					the_post();
@@ -123,24 +123,88 @@ if(intval(get_query_var('wp_side_comments_print_csv')) > 0)
 					$allcomments = array_merge($allcomments, $comments);
 				}
 				$commentsUsers = array();
+				$allmetas = array();
+				global $wpdb;
+				$defaults_metas = array(
+						'nickname' => false,
+						'first_name' => false,
+						'last_name' => false,
+						'description' => false,
+						'rich_editing' => false,
+						'comment_shortcuts' => false,
+						'admin_color' => false,
+						'use_ssl' => false,
+						'show_admin_bar_front' => false,
+						$wpdb->prefix.'capabilities' => false,
+						$wpdb->prefix.'user_level' => false,
+						'dismissed_wp_pointers' => false,
+						'show_welcome_panel' => false,
+						'session_tokens' => false,
+						$wpdb->prefix.'dashboard_quick_press_last_post_id' => false,
+						'closedpostboxes_page' => false,
+						'metaboxhidden_page' => false,
+						$wpdb->prefix.'accept_the_terms_of_site' => false,
+						'primary_blog' => false
+						
+				);
 				foreach ($allcomments as $comment)
 				{
 					$user = get_comment_author($comment->comment_ID);
-					if(!array_key_exists($user, $commentsUsers)) $commentsUsers[$user] = 0;
-					$commentsUsers[$user] += 1;
+					$user_id = $comment->user_id;
+					if(!array_key_exists($user, $commentsUsers))
+					{
+						$commentsUsers[$user] = array('count' => 0);
+						if($user_id > 0)
+						{
+							$metas = get_user_meta($user_id, '', true);
+							if(is_array($metas))
+							{
+								$metas = array_diff_key($metas, $defaults_metas);
+							
+								$allmetas = array_merge($allmetas, array_keys($metas));
+								$commentsUsers[$user]['metas'] = $metas;
+								continue;
+							}
+						}
+						$commentsUsers[$user]['metas'] = array();
+					}
+					$commentsUsers[$user]['count'] += 1;
 				}
 				
+				ksort($allmetas, SORT_NATURAL);
+				
+				$header = array(__('Usuário', 'wp-side-comments'), __('Número de cometários', 'wp-side-comments'));
+				$header = array_merge($header, $allmetas);
+				fputcsv($output, $header, ';');
 				foreach ($commentsUsers as $key => $value)
 				{
-					fputcsv($output , array(
-							$key,
-							$value,
-					), ';');
+					$row = array(
+						$key,
+						$value['count'],
+					);
+					$index = 0;
+					foreach ($header as $col)
+					{
+						if($index < 2)
+						{
+							$index++;
+							continue;
+						}
+						if(array_key_exists($col, $value['metas']))
+						{
+							$row[] = $value['metas'][$col][0];
+						}
+						else 
+						{
+							$row[] = '';
+						}
+					}
+					fputcsv($output , $row, ';');
 				}
 			break;
 		}
 	}
-	fclose($output);
+	//fclose($output);
 	die();
 }
 
