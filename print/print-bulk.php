@@ -7,7 +7,7 @@
 
 
 // PHP 5.3 and later:
-namespace CTLT_WP_Side_Comments;
+namespace CTLT_WP_Side_Comments\Admin;
 
 class BulkPrint
 {
@@ -123,4 +123,4 @@ class BulkPrint
 	
 }
 
-$BulkPrint = new BulkPrint();
+$BulkPrint = new \CTLT_WP_Side_Comments\Admin\BulkPrint();
