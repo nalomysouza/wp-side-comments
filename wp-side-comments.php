@@ -68,7 +68,7 @@
 
 			add_action('wp_ajax_register_confirm_terms', array( $this,'wp_ajax_register_confirm_terms'));
 
-			add_filter( 'wp_side_comments_default_comment_approved_status' , array( $this,'wp_side_comments_preprocess_side_comment' ));
+			//add_filter( 'wp_side_comments_default_comment_approved_status' , array( $this,'wp_side_comments_preprocess_side_comment' ));
 
 			add_filter( 'preprocess_comment' , array( $this,'wp_preprocess_comment_handler' ));
 		
